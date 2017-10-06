@@ -1,5 +1,7 @@
 # backup.sh
 
+### Version 1.0.0
+
 Pure bash implementation backup script for GNU/Linux, BSD and UNIX.
 backup.sh can put encrypted backups on local or remote servers.
 
