@@ -26,7 +26,7 @@ __MYSQLDUMP_DATABASES=(
 mysqldump_setup() {
     __MYSQLDUMP=$(which mysqldump || true)
 
-    if [[ ${#__MYSQLDUMP} -eq 0 ]] ; then
+    if [[ "${__MYSQLDUMP}" == "" ]] ; then
         fatal "mysqldump not found. Please install before using this plugin."
     fi
 
@@ -58,7 +58,7 @@ mysqldump_compress() {
             ;;
     esac
 
-    if [[ ${#__COMPRESS} -eq 0 ]] ; then
+    if [[ "${__COMPRESS}" == "" ]] ; then
         fatal "Compression method ${__BACKUP_COMPRESSION_METHOD} not found."
     else
         info "Compressing ${1} using: ${__COMPRESS}."
