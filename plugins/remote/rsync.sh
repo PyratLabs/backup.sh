@@ -12,7 +12,7 @@ __RSYNCR_TARGET="/tmp/rsync_backups"
 rsync_setup() {
     __RSYNCR=$(which rsync || true)
 
-    if [[ ${#__RSYNCR} -eq 0 ]] ; then
+    if [[ "${__RSYNCR}" == "" ]] ; then
         fatal "rsync not found. Please install before using this plugin."
     fi
 
