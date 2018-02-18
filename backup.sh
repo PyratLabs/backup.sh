@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 #/
-#/ backup.sh - v1.1.0
+#/ backup.sh - v1.1.1
 #/ ------------------
 #/ (c) PyratLabs 2017
 #/
@@ -139,7 +139,7 @@ ok()        { echo "${__CG}[OK]${__CK}      $*"      | tee -a "${LOG_FILE}" >&2 
 info()      { echo "${__CC}[INFO]${__CK}    $*"      | tee -a "${LOG_FILE}" >&2 ; }
 warning()   { echo "${__CY}[WARNING]${__CK} $*"      | tee -a "${LOG_FILE}" >&2 ; }
 error()     { echo "${__CR}[ERROR]${__CK}   $*"      | tee -a "${LOG_FILE}" >&2 ; __ERR=1 ; }
-fatal()     { echo "${__CM}[FATAL]${__CK}   $*"      | tee -a "${LOG_FILE}" >&2 ; exit 1 ; }
+fatal()     { echo "${__CM}[FATAL]${__CK}   $*"      | tee -a "${LOG_FILE}" >&2 ; __ERR=1 ; exit 1 ; }
 timestamp() { echo "${__CK}[TIME]${__CK}    $(date)" | tee -a "${LOG_FILE}" >&2 ; }
 
 setup() {
