@@ -1,6 +1,6 @@
 # backup.sh
 
-### Version 1.0.0
+### Version 1.1.0
 
 Pure bash implementation backup script for GNU/Linux, BSD and UNIX.
 backup.sh can put encrypted backups on local or remote servers.
@@ -25,8 +25,8 @@ weekly and monthly backups.
 ## Usage
 
 ```
-backup.sh
----------
+backup.sh - v1.1.0
+------------------
 (c) PyratLabs 2017
 
 Usage:
@@ -54,6 +54,7 @@ Options:
   --no-encryption:       Do not use PGP/GPG2 encryption
   --no-compression:      Do not compress, just archive
   --no-application:      Do not use external applications to backup
+  --no-color:            Do not use colored output
 ```
 
 ## Plugins
