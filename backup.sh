@@ -32,6 +32,7 @@ IFS=$'\n\t'
 #/   --no-encryption:       Do not use PGP/GPG2 encryption
 #/   --no-compression:      Do not compress, just archive
 #/   --no-application:      Do not use external applications to backup
+#/   --no-color:            Do not use colored output
 #/
 
 #
@@ -79,15 +80,17 @@ usage() {
 
 expr "$*" : ".*--help" > /dev/null && usage
 expr "$*" : ".*-h" > /dev/null && usage
+__ERR=0
 __OPTS=$*
+__CR="$(tput setaf 1)$(tput bold)"
+__CG="$(tput setaf 2)$(tput bold)"
+__CY="$(tput setaf 3)$(tput bold)"
+__CM="$(tput setaf 5)$(tput bold)"
+__CC="$(tput setaf 4)$(tput bold)"
+__CK="$(tput sgr0)"
 __PWD=${BASH_SOURCE%/*}
 
-readonly LOG_FILE="/tmp/$(basename "${0}").log"
-info()      { echo "[INFO]    $*"    | tee -a "${LOG_FILE}" >&2 ; }
-warning()   { echo "[WARNING] $*"    | tee -a "${LOG_FILE}" >&2 ; }
-error()     { echo "[ERROR]   $*"    | tee -a "${LOG_FILE}" >&2 ; }
-fatal()     { echo "[FATAL]   $*"    | tee -a "${LOG_FILE}" >&2 ; exit 1 ; }
-timestamp() { echo "[TIME]    $(date)" | tee -a "${LOG_FILE}" >&2 ; }
+
 
 parseops() {
     for opt in ${__OPTS} ; do
@@ -119,9 +122,25 @@ parseops() {
             --no-application)
                 __BACKUP_APPLICATION=false
                 ;;
+            --no-color|--no-colour)
+                __CR=""
+                __CG=""
+                __CY=""
+                __CM=""
+                __CC=""
+                __CK=""
+                ;;
         esac
     done
 }
+
+readonly LOG_FILE="/tmp/$(basename "${0}").log"
+ok()        { echo "${__CG}[OK]${__CK}      $*"      | tee -a "${LOG_FILE}" >&2 ; }
+info()      { echo "${__CC}[INFO]${__CK}    $*"      | tee -a "${LOG_FILE}" >&2 ; }
+warning()   { echo "${__CY}[WARNING]${__CK} $*"      | tee -a "${LOG_FILE}" >&2 ; }
+error()     { echo "${__CR}[ERROR]${__CK}   $*"      | tee -a "${LOG_FILE}" >&2 ; __ERR=1 ; }
+fatal()     { echo "${__CM}[FATAL]${__CK}   $*"      | tee -a "${LOG_FILE}" >&2 ; exit 1 ; }
+timestamp() { echo "${__CK}[TIME]${__CK}    $(date)" | tee -a "${LOG_FILE}" >&2 ; }
 
 setup() {
     # Create the temporary directory setup.
@@ -344,6 +363,11 @@ remote_backup() {
 }
 
 cleanup() {
+    if [[ "${__ERR}" -gt 0 ]] ; then
+        warning "Backup completed with errors."
+    else
+        ok "Backup completed successfully."
+    fi
     # Move log is outdir exists
     info "Moving log to ${__BACKUP_OUT}"
     test -d "${__OUTDIR}" && mv "${LOG_FILE}" "${__OUTDIR}"
