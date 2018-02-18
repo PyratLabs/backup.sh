@@ -153,13 +153,13 @@ setup() {
     __ENCRYPT=$(which gpg2 || which pgp || true)
     __RSYNC=$(which rsync || true)
 
-    if [[ ${#__ARCHIVE} -eq 0 ]] ; then
+    if [[ "${__ARCHIVE}" == "" ]] ; then
         fatal "No archiving method found."
     else
         info "Archiving using: ${__ARCHIVE}."
     fi
 
-    if [[ ${#__RSYNC} -eq 0 ]] ; then
+    if [[ "${__RSYNC}" == "" ]] ; then
         fatal "Rsync not found."
     else
         info "Rsync using: ${__ARCHIVE}."
@@ -176,7 +176,7 @@ setup() {
         __KEYDIR="${__PWD}/${__BACKUP_ENCRYPTION_KEYDIR}"
     fi
 
-    if [[ ${#__ENCRYPT} -eq 0 ]] ; then
+    if [[ "${__ENCRYPT}" == "" ]] ; then
         warning "No encryption method found. Proceeding without encryption."
         __BACKUP_ENCRYPTION=false
     else
