@@ -1,4 +1,7 @@
 language: generic
 sudo: required
 script:
-  sudo ./backup.sh > /dev/null 2>&1
+  echo "Running ShellCheck..." ;
+  shellcheck ./backup.sh ;
+  echo "Running ./backup.sh..." ;
+  sudo ./backup.sh 2>&1 | egrep "\[[A-Z]+\]"
