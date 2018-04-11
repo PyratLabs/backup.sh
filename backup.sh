@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 #/
-#/ backup.sh - v1.1.4
+#/ backup.sh - v1.1.5
 #/ ------------------
 #/ (c) PyratLabs 2017
 #/
