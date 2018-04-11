@@ -2,6 +2,8 @@
 
 ### Version 1.1.4
 
+[![Build Status](https://travis-ci.org/PyratLabs/backup.sh.svg?branch=master)](https://travis-ci.org/PyratLabs/backup.sh)
+
 Pure bash implementation backup script for GNU/Linux, BSD and UNIX.
 backup.sh can put encrypted backups on local or remote servers.
 
