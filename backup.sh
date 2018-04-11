@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 #/
-#/ backup.sh - v1.1.3
+#/ backup.sh - v1.1.4
 #/ ------------------
 #/ (c) PyratLabs 2017
 #/
@@ -185,16 +185,28 @@ setup() {
     fi
 
     if [[ ${__BACKUP_ENCRYPTION} == true ]] ; then
-        info "Setting up encryption keychain."
-        mkdir "${__TMPDIR}/keychain"
-        chmod 0700 "${__TMPDIR}/keychain"
+        info "Checking for keys in ${__PATHMATCH}"
+        __PUBLIC_KEYS_COUNT=$(find "${__PATHMATCH}" -type f -name "*.pub" | wc -l)
 
-        for key in "${__PATHMATCH}/"*.pub ; do
-            info "Importing ${key}"
-            ${__ENCRYPT} \
-                --homedir "${__TMPDIR}/keychain" \
-                --import "${key}"
-        done
+        if [[ ${__PUBLIC_KEYS_COUNT} -lt 1 ]] ; then
+            warning "No keys found in ${__PATHMATCH}. Disabling encryption."
+            __BACKUP_ENCRYPTION=false
+        else  
+            info "Setting up encryption keychain."
+            mkdir "${__TMPDIR}/.keychain"
+            chmod 0700 "${__TMPDIR}/.keychain"
+
+            for key in "${__PATHMATCH}/"*.pub ; do
+                info "Importing ${key}"
+                if [[ -f "${key}" ]] ; then
+                    ${__ENCRYPT} \
+                        --homedir "${__TMPDIR}/.keychain" \
+                        --import "${key}"
+                else
+                    warning "${key} is not a file."
+                fi
+            done
+        fi
     fi
 
     __DAYNAME=$(date "+%A")
@@ -262,7 +274,7 @@ encrypt() {
 
     local __PUBLIC_KEYS
     __PUBLIC_KEYS=$(${__ENCRYPT} \
-        --homedir "${__TMPDIR}/keychain" \
+        --homedir "${__TMPDIR}/.keychain" \
         --list-public-keys \
         --with-colons | \
         awk -F':' '/^uid/ { print $10 }' | \
@@ -279,7 +291,7 @@ encrypt() {
     for file in ${__TMPDIR}/* ; do
         if [[ -f ${file} ]] ; then
             "${__ENCRYPT}" \
-                --homedir "${__TMPDIR}/keychain" \
+                --homedir "${__TMPDIR}/.keychain" \
                 --trust-model always \
                 "${__ASCII}" \
                 "${__RECIPIENTS[@]}" \
@@ -298,7 +310,7 @@ local_backup() {
     mkdir -p "${__OUTDIR}" || \
         fatal "Cannot write to ${__BACKUP_OUT}"
 
-    ${__RSYNC} --exclude "keychain" -rl "${__TMPDIR}/" "${__OUTDIR}/"
+    ${__RSYNC} --exclude ".keychain" -rl "${__TMPDIR}/" "${__OUTDIR}/"
 }
 
 application_backup() {
