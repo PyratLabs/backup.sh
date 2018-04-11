@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 #/
-#/ backup.sh - v1.1.4
+#/ backup.sh - v1.1.5
 #/ ------------------
 #/ (c) PyratLabs 2017
 #/
@@ -191,7 +191,7 @@ setup() {
         if [[ ${__PUBLIC_KEYS_COUNT} -lt 1 ]] ; then
             warning "No keys found in ${__PATHMATCH}. Disabling encryption."
             __BACKUP_ENCRYPTION=false
-        else  
+        else
             info "Setting up encryption keychain."
             mkdir "${__TMPDIR}/.keychain"
             chmod 0700 "${__TMPDIR}/.keychain"
@@ -333,6 +333,7 @@ application_backup() {
             __FAPP=$(basename "${application}")
             __ABACK=${__FAPP%%.*}
             info "Application backup plugin found: ${__ABACK}"
+            # shellcheck source=/dev/null
             source "${application}"
             "${__ABACK}_exec" "${__TMPDIR}"
             __I+=1
@@ -363,6 +364,7 @@ remote_backup() {
             __FREMOTE=$(basename "${remote}")
             __RBACK=${__FREMOTE%%.*}
             info "Remote backup plugin found: ${__RBACK}"
+            # shellcheck source=/dev/null
             source "${remote}"
             "${__RBACK}_exec" "${__BACKUP_OUT}"
             __I+=1

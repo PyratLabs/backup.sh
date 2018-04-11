@@ -1,0 +1,7 @@
+language: generic
+sudo: required
+script:
+  echo "Running ShellCheck..." &&
+  find $(pwd) -type f -name '*.sh' -exec shellcheck {} \; &&
+  echo "Running ./backup.sh..." &&
+  sudo ./backup.sh 2>&1 | egrep "\[[A-Z]+\]"
