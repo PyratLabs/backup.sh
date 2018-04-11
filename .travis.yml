@@ -1,3 +1,4 @@
 language: generic
+sudo: required
 script:
-  - ./backup.sh
+  sudo ./backup.sh > /dev/null 2>&1
