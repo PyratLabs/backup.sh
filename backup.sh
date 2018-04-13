@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 #/
-#/ backup.sh - v1.1.5
+#/ backup.sh - v1.1.6
 #/ ------------------
 #/ (c) PyratLabs 2017
 #/
@@ -162,7 +162,7 @@ setup() {
     if [[ "${__RSYNC}" == "" ]] ; then
         fatal "Rsync not found."
     else
-        info "Rsync using: ${__ARCHIVE}."
+        info "Rsync using: ${__RSYNC}."
     fi
 
     local __PATHMATCH
@@ -186,9 +186,9 @@ setup() {
 
     if [[ ${__BACKUP_ENCRYPTION} == true ]] ; then
         info "Checking for keys in ${__PATHMATCH}"
-        __PUBLIC_KEYS_COUNT=$(find "${__PATHMATCH}" -type f -name "*.pub" | wc -l)
+        __PUBKEYS_COUNT=$(find "${__PATHMATCH}" -type f -name "*.pub" | wc -l)
 
-        if [[ ${__PUBLIC_KEYS_COUNT} -lt 1 ]] ; then
+        if [[ ${__PUBKEYS_COUNT} -lt 1 ]] ; then
             warning "No keys found in ${__PATHMATCH}. Disabling encryption."
             __BACKUP_ENCRYPTION=false
         else
