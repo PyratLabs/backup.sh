@@ -13,7 +13,7 @@ __S3_BUCKET="bucket-name"
 # [AWS_ACCESS_SECRET]
 
 s3_setup() {
-    __AWS=$(which aws || true)
+    __AWS=$(command -v aws || true)
 
     if [[ "${__AWS}" == "" ]] ; then
         fatal "awscli not found. Please install before using this plugin."

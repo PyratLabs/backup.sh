@@ -24,7 +24,7 @@ __MYSQLDUMP_DATABASES=(
 )
 
 mysqldump_setup() {
-    __MYSQLDUMP=$(which mysqldump || true)
+    __MYSQLDUMP=$(command -v mysqldump || true)
 
     if [[ "${__MYSQLDUMP}" == "" ]] ; then
         fatal "mysqldump not found. Please install before using this plugin."
@@ -40,21 +40,21 @@ mysqldump_compress() {
 
     case "${__BACKUP_COMPRESSION_METHOD}" in
         gz)
-            __COMPRESS=$(which gzip || true)
+            __COMPRESS=$(command -v gzip || true)
             ;;
         bz2)
-            __COMPRESS=$(which bzip2 || true)
+            __COMPRESS=$(command -v bzip2 || true)
             ;;
         xz)
-            __COMPRESS=$(which xz || true)
+            __COMPRESS=$(command -v xz || true)
             ;;
         lzma)
-            __COMPRESS=$(which lzma || true)
+            __COMPRESS=$(command -v lzma || true)
             ;;
         *)
             error "Unrecognised compression method: " \
                 "${__BACKUP_COMPRESSION_METHOD}. Using gz."
-            __COMPRESS=$(which gzip || true)
+            __COMPRESS=$(command -v gzip || true)
             ;;
     esac
 
