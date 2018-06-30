@@ -50,6 +50,13 @@ __BACKUP_DIRS=(
 # Directory to backup to
 __BACKUP_OUT="/tmp/backups"
 
+# Backup date format (may be used for overwriting backups, +eg. %A = Monday)
+__BACKUP_DATE_FORMAT="+%A"
+
+# Backup Retention
+# How many backups should we keep? (set to 'false' to retain all backups)
+__BACKUP_RETENTION=7
+
 # Compress backup archives, which method?
 __BACKUP_COMPRESSION=true
 __BACKUP_COMPRESSION_METHOD="gz"
@@ -209,9 +216,10 @@ setup() {
         fi
     fi
 
-    __DAYNAME=$(date "+%A")
+    __DATENAME=$(date "${__BACKUP_DATE_FORMAT}")
     __HOSTNAME=$(hostname)
-    __OUTDIR="${__BACKUP_OUT}/${__HOSTNAME}/${__DAYNAME}"
+    __HOST_OUTDIR="${__BACKUP_OUT}/${__HOSTNAME}"
+    __OUTDIR="${__HOST_OUTDIR}/${__DATENAME}"
 }
 
 archive() {
@@ -376,6 +384,36 @@ remote_backup() {
     fi
 }
 
+clean_old_backups() {
+    if [[ "${__BACKUP_RETENTION}" == false ]] ; then
+        info "No explicit backup retention policy set."
+        return 0
+    fi
+
+    info "Backup retention policy: ${__BACKUP_RETENTION} backups."
+    info "Building Manifest"
+    find "${__HOST_OUTDIR}" \
+        -maxdepth 1 \
+        -type d \
+        -not -path "${__HOST_OUTDIR}" \
+        -exec stat -c "%Y %n" {} \; > "${__HOST_OUTDIR}/backup.MANIFEST"
+    if [[ "${?}" -gt 0 ]] ; then
+        error "Could not build manifest file"
+    else
+        __I=0
+        for backup in $(sort -nr "${__HOST_OUTDIR}/backup.MANIFEST") ; do
+            __BACKDIR=$(echo "${backup}" | awk '{ print $NF }')
+            if [[ "${__I}" -gt "${__BACKUP_RETENTION}" ]] ; then
+                info "Old backup: ${__BACKDIR} removed."
+                test -d "${__BACKDIR}" && rm -r "${__BACKDIR}"
+            fi
+            __I+=1
+        done
+    fi
+    test -f "${__HOST_OUTDIR}/backup.MANIFEST" && \
+        rm "${__HOST_OUTDIR}/backup.MANIFEST"
+}
+
 cleanup() {
     if [[ "${__ERR}" -gt 0 ]] ; then
         warning "Backup completed with errors."
@@ -404,4 +442,5 @@ if [[ "${BASH_SOURCE[0]}" = "${0}" ]] ; then
     encrypt
     local_backup
     remote_backup
+    clean_old_backups
 fi
