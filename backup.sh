@@ -57,11 +57,11 @@ __BACKUP_DATE_FORMAT="+%A"
 # How many backups should we keep? (set to 'false' to retain all backups)
 __BACKUP_RETENTION=7
 
-# Compress backup archives, which method?
+# Compress backup archives, command -v method?
 __BACKUP_COMPRESSION=true
 __BACKUP_COMPRESSION_METHOD="gz"
 
-# Encrypt the backups? Which public key directory?
+# Encrypt the backups? command -v public key directory?
 __BACKUP_ENCRYPTION=true
 __BACKUP_ENCRYPTION_ASCII=true
 __BACKUP_ENCRYPTION_KEYDIR="pubkey"
@@ -81,7 +81,7 @@ __BACKUP_REMOTE=true
 usage() {
     local __F
     __F=$(basename "${0}")
-    grep '^#/' "${0}" | sed -e "s#\./backup.sh#${__F}#g" | cut -c4-
+    grep '^#/' "${0}" | sed -e "s#\\./backup.sh#${__F}#g" | cut -c4-
     exit 0
 }
 
@@ -156,9 +156,9 @@ setup() {
     info "${__TMPDIR} created."
 
     # Find the required dependencies for backup.
-    __ARCHIVE=$(which tar || true)
-    __ENCRYPT=$(which gpg2 || which pgp || true)
-    __RSYNC=$(which rsync || true)
+    __ARCHIVE=$(command -v tar || true)
+    __ENCRYPT=$(command -v gpg2 || command -v pgp || true)
+    __RSYNC=$(command -v rsync || true)
 
     if [[ "${__ARCHIVE}" == "" ]] ; then
         fatal "No archiving method found."
@@ -296,7 +296,7 @@ encrypt() {
         __RECIPIENTS+=("-r ${key}")
     done
 
-    for file in ${__TMPDIR}/* ; do
+    for file in "${__TMPDIR}"/* ; do
         if [[ -f ${file} ]] ; then
             "${__ENCRYPT}" \
                 --homedir "${__TMPDIR}/.keychain" \
@@ -336,7 +336,7 @@ application_backup() {
     __I=0
 
     info "Application backups enabled."
-    for application in ${__PWD}/plugins/application/* ; do
+    for application in "${__PWD}"/plugins/application/* ; do
         if [[ -f ${application} ]] ; then
             __FAPP=$(basename "${application}")
             __ABACK=${__FAPP%%.*}
@@ -367,7 +367,7 @@ remote_backup() {
     __I=0
 
     info "Remote backups enabled."
-    for remote in ${__PWD}/plugins/remote/* ; do
+    for remote in "${__PWD}"/plugins/remote/* ; do
         if [[ -f ${remote} ]] ; then
             __FREMOTE=$(basename "${remote}")
             __RBACK=${__FREMOTE%%.*}
@@ -397,11 +397,12 @@ clean_old_backups() {
         -type d \
         -not -path "${__HOST_OUTDIR}" \
         -exec stat -c "%Y %n" {} \; > "${__HOST_OUTDIR}/backup.MANIFEST"
-    if [[ "${?}" -gt 0 ]] ; then
+    if [[ ! -f "${__HOST_OUTDIR}/backup.MANIFEST" ]] ; then
         error "Could not build manifest file"
     else
         __I=0
-        for backup in $(sort -nr "${__HOST_OUTDIR}/backup.MANIFEST") ; do
+        __MANIFEST=$(sort -nr "${__HOST_OUTDIR}/backup.MANIFEST")
+        for backup in ${__MANIFEST} ; do
             __BACKDIR=$(echo "${backup}" | awk '{ print $NF }')
             if [[ "${__I}" -gt "${__BACKUP_RETENTION}" ]] ; then
                 info "Old backup: ${__BACKDIR} removed."
