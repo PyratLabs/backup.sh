@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 #/
-#/ backup.sh - v1.1.7
+#/ backup.sh - v1.1.8
 #/ ------------------
 #/ (c) PyratLabs 2017
 #/
@@ -42,10 +42,9 @@ IFS=$'\n\t'
 # Array of directories to backup
 # Wildcards can be used to chunk backup directories
 __BACKUP_DIRS=(
-#    /etc
-#    /home/*
-#    /var/www/*
-    /home/xmanning/Documents
+    /etc
+    /home/*
+    /var/www/*
 )
 
 # Directory to backup to
@@ -53,12 +52,10 @@ __BACKUP_OUT="/tmp/backups"
 
 # Backup date format (may be used for overwriting backups, +eg. %A = Monday)
 __BACKUP_DATE_FORMAT="+%A"
-__BACKUP_DATE_FORMAT="+%s"
 
 # Backup Retention
 # How many backups should we keep? (set to 'false' to retain all backups)
 __BACKUP_RETENTION=7
-__BACKUP_RETENTION=2
 
 # Compress backup archives, command -v method?
 __BACKUP_COMPRESSION=true
