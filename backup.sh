@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 #/
-#/ backup.sh - v1.1.8
+#/ backup.sh - v1.1.9
 #/ ------------------
 #/ (c) PyratLabs 2017
 #/
@@ -404,7 +404,7 @@ clean_old_backups() {
         __MANIFEST=$(sort -nr "${__HOST_OUTDIR}/backup.MANIFEST")
         for backup in ${__MANIFEST} ; do
             __BACKDIR=$(echo "${backup}" | awk '{ print $NF }')
-            if [[ "${__I}" -gt "${__BACKUP_RETENTION}" ]] ; then
+            if [[ ${__I} -gt ${__BACKUP_RETENTION} ]] ; then
                 info "Old backup: ${__BACKDIR} removed."
                 test -d "${__BACKDIR}" && rm -r "${__BACKDIR}"
             fi
