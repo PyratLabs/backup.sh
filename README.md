@@ -1,6 +1,6 @@
 # backup.sh
 
-### Version 1.1.9
+### Version 1.2.0
 
 [![Build Status](https://travis-ci.org/PyratLabs/backup.sh.svg?branch=master)](https://travis-ci.org/PyratLabs/backup.sh)
 
@@ -27,7 +27,7 @@ weekly and monthly backups.
 ## Usage
 
 ```
-backup.sh - v1.1.9
+backup.sh - v1.2.0
 ------------------
 (c) PyratLabs 2017
 
