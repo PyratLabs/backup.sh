@@ -50,18 +50,20 @@ __BACKUP_DIRS=(
 # Directory to backup to
 __BACKUP_OUT="/tmp/backups"
 
-# Backup date format (may be used for overwriting backups, +eg. %A = Monday)
+# Backup date format (may be used for overwriting backups with the same name,
+# eg. +%A = Monday, therefore would overwrite every Monday)
 __BACKUP_DATE_FORMAT="+%A"
 
 # Backup Retention
 # How many backups should we keep? (set to 'false' to retain all backups)
+# __BACKUP_RETENTION=false
 __BACKUP_RETENTION=7
 
-# Compress backup archives, command -v method?
+# Compress backup archives, which method?
 __BACKUP_COMPRESSION=true
 __BACKUP_COMPRESSION_METHOD="gz"
 
-# Encrypt the backups? command -v public key directory?
+# Encrypt the backups? which public key directory?
 __BACKUP_ENCRYPTION=true
 __BACKUP_ENCRYPTION_ASCII=true
 __BACKUP_ENCRYPTION_KEYDIR="pubkey"
@@ -222,6 +224,60 @@ setup() {
     __OUTDIR="${__HOST_OUTDIR}/${__DATENAME}"
 }
 
+pre_backup() {
+    test -d "${__PWD}/plugins/pre-backup" || \
+        fatal "Cannot find pre-remote plugin dir."
+
+    local __I
+    local __FBACK
+    local __RBACK
+
+    __I=0
+
+    for plugin in "${__PWD}"/plugins/pre-backup/*.sh ; do
+        if [[ -f ${plugin} ]] ; then
+            __FBACK=$(basename "${plugin}")
+            __RBACK=${__FBACK%%.*}
+            info "Pre-backup plugin found: ${__RBACK}"
+            # shellcheck source=/dev/null
+            source "${backup}"
+            "${__RBACK}_exec" "${__BACKUP_OUT}"
+            ((__I+=1))
+        fi
+    done
+
+    if [[ ${__I} -lt 1 ]] ; then
+        info "No pre-backup plugins found."
+    fi
+}
+
+post_backup() {
+    test -d "${__PWD}/plugins/post-backup" || \
+        fatal "Cannot find post-backup plugin dir."
+
+    local __I
+    local __FBACK
+    local __RBACK
+
+    __I=0
+
+    for plugin in "${__PWD}"/plugins/post-backup/*.sh ; do
+        if [[ -f ${plugin} ]] ; then
+            __FBACK=$(basename "${plugin}")
+            __RBACK=${__FBACK%%.*}
+            info "Post-backup plugin found: ${__RBACK}"
+            # shellcheck source=/dev/null
+            source "${backup}"
+            "${__RBACK}_exec" "${__BACKUP_OUT}"
+            ((__I+=1))
+        fi
+    done
+
+    if [[ ${__I} -lt 1 ]] ; then
+        info "No post backup plugins found."
+    fi
+}
+
 archive() {
     for target in "${__BACKUP_DIRS[@]}" ; do
         if [[ -r ${target} ]] ; then
@@ -321,6 +377,68 @@ local_backup() {
     ${__RSYNC} --exclude ".keychain" -rl "${__TMPDIR}/" "${__OUTDIR}/"
 }
 
+pre_application_backup() {
+    if [[ ${__BACKUP_APPLICATION} != true ]] ; then
+        return 0
+    fi
+
+    test -d "${__PWD}/plugins/pre-application" || \
+        fatal "Cannot find pre-application plugin dir."
+
+    local __I
+    local __FREMOTE
+    local __RBACK
+
+    __I=0
+
+    for application in "${__PWD}"/plugins/pre-application/*.sh ; do
+        if [[ -f ${application} ]] ; then
+            __FAPP=$(basename "${application}")
+            __ABACK=${__FAPP%%.*}
+            info "Pre-Application backup plugin found: ${__ABACK}"
+            # shellcheck source=/dev/null
+            source "${application}"
+            "${__ABACK}_exec" "${__TMPDIR}"
+            ((__I+=1))
+        fi
+    done
+
+    if [[ ${__I} -lt 1 ]] ; then
+        info "No pre-application backup plugins found."
+    fi
+}
+
+post_application_backup() {
+    if [[ ${__BACKUP_APPLICATION} != true ]] ; then
+        return 0
+    fi
+
+    test -d "${__PWD}/plugins/post-application" || \
+        fatal "Cannot find application plugin dir."
+
+    local __I
+    local __FREMOTE
+    local __RBACK
+
+    __I=0
+
+    for application in "${__PWD}"/plugins/post-application/*.sh ; do
+        if [[ -f ${application} ]] ; then
+            __FAPP=$(basename "${application}")
+            __ABACK=${__FAPP%%.*}
+            info "Post-Application backup plugin found: ${__ABACK}"
+            # shellcheck source=/dev/null
+            source "${application}"
+            "${__ABACK}_exec" "${__TMPDIR}"
+            ((__I+=1))
+        fi
+    done
+
+    if [[ ${__I} -lt 1 ]] ; then
+        info "No post-application backup plugins found."
+    fi
+}
+
 application_backup() {
     if [[ ${__BACKUP_APPLICATION} != true ]] ; then
         return 0
@@ -336,7 +454,8 @@ application_backup() {
     __I=0
 
     info "Application backups enabled."
-    for application in "${__PWD}"/plugins/application/* ; do
+    pre_application_backup
+    for application in "${__PWD}"/plugins/application/*.sh ; do
         if [[ -f ${application} ]] ; then
             __FAPP=$(basename "${application}")
             __ABACK=${__FAPP%%.*}
@@ -344,12 +463,75 @@ application_backup() {
             # shellcheck source=/dev/null
             source "${application}"
             "${__ABACK}_exec" "${__TMPDIR}"
-            __I+=1
+            ((__I+=1))
         fi
     done
 
     if [[ ${__I} -lt 1 ]] ; then
-        warning "No application backup plugin found."
+        warning "No application backup plugins found."
+    fi
+    post_application_backup
+}
+
+pre_remote_backup() {
+    if [[ ${__BACKUP_REMOTE} != true ]] ; then
+        return 0
+    fi
+
+    test -d "${__PWD}/plugins/pre-remote" || \
+        fatal "Cannot find pre-remote plugin dir."
+
+    local __I
+    local __FREMOTE
+    local __RBACK
+
+    __I=0
+
+    for remote in "${__PWD}"/plugins/pre-remote/*.sh ; do
+        if [[ -f ${remote} ]] ; then
+            __FREMOTE=$(basename "${remote}")
+            __RBACK=${__FREMOTE%%.*}
+            info "Pre-Remote backup plugin found: ${__RBACK}"
+            # shellcheck source=/dev/null
+            source "${remote}"
+            "${__RBACK}_exec" "${__BACKUP_OUT}"
+            ((__I+=1))
+        fi
+    done
+
+    if [[ ${__I} -lt 1 ]] ; then
+        info "No pre-remote backup plugins found."
+    fi
+}
+
+post_remote_backup() {
+    if [[ ${__BACKUP_REMOTE} != true ]] ; then
+        return 0
+    fi
+
+    test -d "${__PWD}/plugins/post-remote" || \
+        fatal "Cannot find post-remote plugin dir."
+
+    local __I
+    local __FREMOTE
+    local __RBACK
+
+    __I=0
+
+    for remote in "${__PWD}"/plugins/post-remote/*.sh ; do
+        if [[ -f ${remote} ]] ; then
+            __FREMOTE=$(basename "${remote}")
+            __RBACK=${__FREMOTE%%.*}
+            info "Post-Remote backup plugin found: ${__RBACK}"
+            # shellcheck source=/dev/null
+            source "${remote}"
+            "${__RBACK}_exec" "${__BACKUP_OUT}"
+            ((__I+=1))
+        fi
+    done
+
+    if [[ ${__I} -lt 1 ]] ; then
+        info "No post-remote backup plugins found."
     fi
 }
 
@@ -367,7 +549,8 @@ remote_backup() {
     __I=0
 
     info "Remote backups enabled."
-    for remote in "${__PWD}"/plugins/remote/* ; do
+    pre_remote_backup
+    for remote in "${__PWD}"/plugins/remote/*.sh ; do
         if [[ -f ${remote} ]] ; then
             __FREMOTE=$(basename "${remote}")
             __RBACK=${__FREMOTE%%.*}
@@ -375,13 +558,14 @@ remote_backup() {
             # shellcheck source=/dev/null
             source "${remote}"
             "${__RBACK}_exec" "${__BACKUP_OUT}"
-            __I+=1
+            ((__I+=1))
         fi
     done
 
     if [[ ${__I} -lt 1 ]] ; then
-        warning "No remote backup plugin found."
+        warning "No remote backup plugins found."
     fi
+    post_remote_backup
 }
 
 clean_old_backups() {
@@ -389,6 +573,8 @@ clean_old_backups() {
         info "No explicit backup retention policy set."
         return 0
     fi
+
+    local __I
 
     info "Backup retention policy: ${__BACKUP_RETENTION} backups."
     info "Building Manifest"
@@ -403,12 +589,12 @@ clean_old_backups() {
         __I=0
         __MANIFEST=$(sort -nr "${__HOST_OUTDIR}/backup.MANIFEST")
         for backup in ${__MANIFEST} ; do
+            ((__I+=1))
             __BACKDIR=$(echo "${backup}" | awk '{ print $NF }')
             if [[ ${__I} -gt ${__BACKUP_RETENTION} ]] ; then
                 info "Old backup: ${__BACKDIR} removed."
                 test -d "${__BACKDIR}" && rm -r "${__BACKDIR}"
             fi
-            __I+=1
         done
     fi
     test -f "${__HOST_OUTDIR}/backup.MANIFEST" && \
@@ -438,10 +624,12 @@ if [[ "${BASH_SOURCE[0]}" = "${0}" ]] ; then
     trap cleanup EXIT
     parseops
     setup
+    pre_backup
     archive
     application_backup
     encrypt
     local_backup
     remote_backup
     clean_old_backups
+    post_backup
 fi
