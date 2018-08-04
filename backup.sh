@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 #/
-#/ backup.sh - v1.2.0
+#/ backup.sh - v1.2.1
 #/ ------------------
 #/ (c) PyratLabs 2017
 #/
@@ -240,7 +240,7 @@ pre_backup() {
             __RBACK=${__FBACK%%.*}
             info "Pre-backup plugin found: ${__RBACK}"
             # shellcheck source=/dev/null
-            source "${backup}"
+            source "${plugin}"
             "${__RBACK}_exec" "${__BACKUP_OUT}"
             ((__I+=1))
         fi
@@ -267,7 +267,7 @@ post_backup() {
             __RBACK=${__FBACK%%.*}
             info "Post-backup plugin found: ${__RBACK}"
             # shellcheck source=/dev/null
-            source "${backup}"
+            source "${plugin}"
             "${__RBACK}_exec" "${__BACKUP_OUT}"
             ((__I+=1))
         fi

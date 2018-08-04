@@ -1,11 +1,13 @@
 # backup.sh
 
-### Version 1.2.0
+### Version 1.2.1
 
-[![Build Status](https://travis-ci.org/PyratLabs/backup.sh.svg?branch=master)](https://travis-ci.org/PyratLabs/backup.sh)
+![backup.sh](logo.png)
 
 Pure bash implementation backup script for GNU/Linux, BSD and UNIX.
 backup.sh can put encrypted backups on local or remote servers.
+
+[![Build Status](https://travis-ci.org/PyratLabs/backup.sh.svg?branch=master)](https://travis-ci.org/PyratLabs/backup.sh)
 
 ## Specification
 
@@ -27,7 +29,7 @@ weekly and monthly backups.
 ## Usage
 
 ```
-backup.sh - v1.2.0
+backup.sh - v1.2.1
 ------------------
 (c) PyratLabs 2017
 
