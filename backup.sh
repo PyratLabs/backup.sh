@@ -240,7 +240,7 @@ pre_backup() {
             __RBACK=${__FBACK%%.*}
             info "Pre-backup plugin found: ${__RBACK}"
             # shellcheck source=/dev/null
-            source "${backup}"
+            source "${plugin}"
             "${__RBACK}_exec" "${__BACKUP_OUT}"
             ((__I+=1))
         fi
@@ -267,7 +267,7 @@ post_backup() {
             __RBACK=${__FBACK%%.*}
             info "Post-backup plugin found: ${__RBACK}"
             # shellcheck source=/dev/null
-            source "${backup}"
+            source "${plugin}"
             "${__RBACK}_exec" "${__BACKUP_OUT}"
             ((__I+=1))
         fi
