@@ -1,6 +1,6 @@
 # backup.sh
 
-### Version 1.2.0
+### Version 1.2.1
 
 ![backup.sh](logo.png)
 
@@ -29,7 +29,7 @@ weekly and monthly backups.
 ## Usage
 
 ```
-backup.sh - v1.2.0
+backup.sh - v1.2.1
 ------------------
 (c) PyratLabs 2017
 
